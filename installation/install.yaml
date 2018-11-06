@@ -1,5 +1,5 @@
 ---
-- hosts: master
+- hosts: local
   gather_facts: no
   tasks:
     - name: Print some debug information 
