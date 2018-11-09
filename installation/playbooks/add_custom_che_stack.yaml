@@ -1,0 +1,8 @@
+---
+
+- hosts: localhost
+  tasks:
+    - name: Install Custom Che Stack
+      include_role:
+        name: che
+      tags: ['che']
