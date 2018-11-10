@@ -1,4 +1,24 @@
-# example-custom-walkthrough
-structure of content for add custom walkthrough services and content
+# Example Customisations of an Integreatly cluster
 
-# Status Not Ready
+
+## Running examples
+
+To run an example customisation you need an exiting OpenShift cluster with integreatly installed.
+
+Next you need to get the available inventory file from the manifest secret
+
+```
+oc get secret manifest -n webapp --template '{{index .data "generated_inventory"}}'  | base64 -D > inventory
+```
+
+You should also be logged into the cluster as an admin user.
+
+You can then run the example playbook using ```ansible-playbook```
+
+```
+ansible-playbook -i inventory playbooks/add_custom_che_stack.yaml
+```
+
+## Che custom stack example
+
+[Example playbook](https://github.com/integr8ly/example-customisations/blob/master/installation/playbooks/add_custom_che_stack.yaml)
