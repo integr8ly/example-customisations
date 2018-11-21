@@ -7,8 +7,12 @@ To run an example customisation you need an exiting OpenShift cluster with integ
 
 Next you need to get the available inventory file from the manifest secret
 
-```
+```(mac osx)
 oc get secret manifest -n webapp --template '{{index .data "generated_inventory"}}'  | base64 -D > inventory
+```
+
+```(Linux)
+oc get secret manifest -n webapp --template '{{index .data "generated_inventory"}}'  | base64 -d > inventory
 ```
 
 You should also be logged into the cluster as an admin user.
