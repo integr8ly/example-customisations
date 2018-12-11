@@ -158,6 +158,7 @@ Make sure that all your changes are in the remote repository.
 [type=verificationFail]
 Check your git credentials and that you pushed to the right remote.
 
+[time=10]
 == Publishing the Walkthrough in the Webapp
 
 You can add repositories containing one or more Walkthroughs to a Webapp deployed to Openshift.
