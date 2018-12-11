@@ -16,6 +16,11 @@ Use annotations of type `[type=walkthroughResource]` in the preamble
 section to declare global resources that will be displayed on the tutorial
 overview page as well as on every task.
 
+[type=walkthroughResource]
+=== Useful links
+
+link:https://github.com/integr8ly/example-customisations/tree/master/docs/troubleshooting.adoc[*Troubleshooting guide*]
+
 == First task
 
 This is the overview for the first task in the walkthrough.
