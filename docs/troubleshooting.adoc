@@ -23,7 +23,7 @@ This issue can occur for a number of reasons:
   Ensure you've started the walkthrough from the web app to begin the provisioning.
 - The ServiceInstance spec is invalid.
   * The `serviceInstances` object in `walkthrough.json` should be an array of
-    `ServiceInstance` resources. For example:
+    `ServiceInstance` resources. An example of a `ServiceInstance` resource is:
 [source,json]
 ----
 {
