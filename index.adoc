@@ -1,0 +1,6 @@
+= Example Customizations
+
+Custom walkthroughs for Integreatly
+
+* link:index.html?e=walkthroughs/my-custom-walkthrough/walkthrough.adoc[My Custom Walkthrough]
+* link:index.html?e=docs/troubleshooting.adoc[Troubleshooting]
