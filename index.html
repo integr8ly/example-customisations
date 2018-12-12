@@ -1,0 +1,37 @@
+<html>
+  <head>
+    <script src="./asciidoctor.js"></script>  
+    <link rel="stylesheet" href="index.css">
+
+  </head>
+        
+  <body>
+    <a href="index.html">Home</a>
+
+       <div id="target"></div>
+    <script>
+      
+      var asciidoctor = Asciidoctor();
+      var content = "include::index.adoc[leveloffset=+1]";
+
+
+       const html0 = asciidoctor.convert(content,{safe: 'server', attributes: {PRODUCT: 'BMX'}});      
+       document.getElementById('target').innerHTML = html0;
+
+
+      var fname = (location.search.match(/e=(.*)/)[1]);
+     
+
+        var content = "include::"+ fname + "[leveloffset=+1]";
+       
+
+    const jsonObj = asciidoctor.load(content,{safe: 'server', attributes: {PRODUCT: 'BMX'}});      
+    console.log(jsonObj);
+	  const html = asciidoctor.convert(content,{safe: 'server', attributes: {PRODUCT: 'BMX'}});      
+      document.getElementById('target').innerHTML = html;
+
+</script>
+
+  </body>
+</html>
+
