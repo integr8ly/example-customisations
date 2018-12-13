@@ -32,15 +32,19 @@ A short description for the walkthrough. <2>
 Each of the tasks below demonstrates the features and constraints of the walkthrough file format.
 
 [type=walkthroughResource,serviceName=openshift]
-=== Openshift
+.Openshift
+****
 * link:{openshift-host}/console[Open Console]
 * link:https://help.openshift.com/[Openshift Online Help Center]
 * link:https://blog.openshift.com/[Openshift Blog]
+****
 
 [type=walkthroughResource]
-=== Asciidoc
+.Asciidoc
+****
 * link:http://asciidoc.org/[Asciidoc Homepage]
 * link:http://asciidoc.org/userguide.html#_introduction[User Guide]
+****
 
 [time=10]
 == Getting started
@@ -261,11 +265,16 @@ When users are following a Walkthrough you can display helpful information and l
 [source,asciidoc]
 ----
 [type=walkthroughResource,serviceName=openshift]
-===
+.OpenShift
+****
 * link:{openshift-host}[Openshift Console]
+****
 ----
 
-A third level heading (`===`) must be used as a title for the resource. `serviceName` is optional. If set to the name of a middleware service, an icon indicating the service status will be displayed next to the resource. Walkthrough resources must only be defined in the preamble section.
+Setting `serviceName` is optional. If set to the name of a middleware service, an icon indicating the service status will be displayed next to the resource. For a list of default services, see link:https://github.com/integr8ly/tutorial-web-app/blob/master/src/common/serviceInstanceHelpers.js[the value for DEFAULT_SERVICES].
+
+Walkthrough resources must only be defined in the preamble section.
+
 
 === Adding a Walkthrough resource to the template
 
@@ -273,8 +282,10 @@ A third level heading (`===`) must be used as a title for the resource. `service
 +
 ----
 [type=walkthroughResource]
-=== My resource
+.My resource
+****
 * link:https://google.com[Helpful link]
+****
 ----
 
 . Save, commit and push your changes. Then trigger a redeployment of the Webapp like in the previous task.
@@ -325,8 +336,10 @@ They are added to task sections but don't have the `serviceName` attribute:
 [source,asciidoc]
 ----
 [type=taskResource]
-===
+.Useful links
+****
 * link:{openshift-host}[Openshift Console]
+****
 ----
 
 === Adding a task resource to the template
@@ -335,8 +348,10 @@ They are added to task sections but don't have the `serviceName` attribute:
 +
 ----
 [type=taskResource]
-===
+.Useful links
+****
 * link:https://google.com[Task related link]
+****
 ----
 
 . Save, commit and push your changes. Then trigger a redeployment of the Webapp like in the previous task.
