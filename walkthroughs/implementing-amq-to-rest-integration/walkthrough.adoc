@@ -56,7 +56,7 @@
 
 
 :context: amq2api
-This sample integration connects to an AMQ broker to obtain item
+The sample integration connects to an AMQ broker to obtain item
 delivery records for a hypothetical enterprise. The integration then executes
 a custom step that operates on the records to identify any
 items that were damaged when they were received. After a simple data mapping,
@@ -83,7 +83,7 @@ and extending {prodname} by leading you through the procedures for:
 * link:{fuse-url}[Console]
 ****
 
-[type=walkthroughResource,serviceName=amq-broker-71-persistence]
+[type=walkthroughResource,serviceName=amq-broker-72-persistence]
 .AMQ
 ****
 * link:{amq-url}[Management Console]
