@@ -1,0 +1,647 @@
+
+
+// Attributes converted from DocBook
+:amq: Apache ActiveMQ
+:bomversion: 7.0.0.fuse-000027-redhat-1
+:broker: Red Hat AMQ
+:camel: Apache Camel
+:camelFullVersion: 2.21.0.fuse-000077-redhat-1
+:copy: ©
+:cxf: Apache CXF
+:cxfFullVersion: 3.1.11.fuse-000243-redhat-1
+:eapfull: Red Hat JBoss Enterprise Application Platform
+:eapname: JBoss EAP
+:fabric8Version: 3.0.11.fuse-000039-redhat-1
+:fabric8MavenPluginVersion: 3.5.33.fuse-000067-redhat-1
+:fabric8CamelMavenPluginVersion: 2.3.80
+:felix: Apache Felix
+:fmc: Fuse Console
+:framework: Apache CXF
+:fullversion: 7.0.0.fuse-000191-redhat-1
+:fuseeapversion: 7.0.0.fuse-000085-redhat-1
+:hq: JBoss Operations Network
+:ide: Fuse Tooling
+:ideTools: Fuse Tooling
+:infin: ∞
+:karaf: Apache Karaf
+:mdash: —
+:nbsp:  
+:ndash: –
+:prodbuildversion: 000191
+:prodname: Fuse
+:prodnamefull: Red Hat Fuse
+:productpkg: red_hat_fuse
+:productdocsemail: fuinclude::topics/shared/attributes.adoc[]se-docs-support@redhat.com
+:reg: ®
+:reldate: December 2018
+:router: Apache Camel
+:servicemix: Apache ServiceMix
+:springBootFullVersion: 1.5.13.RELEASE
+:trade: ™
+:version: 7.2
+
+:LinkToolingTutorials: https://access.redhat.com/documentation/en-us/{productpkg}/{version}/html-single/tooling_tutorials/index
+:NameOfToolingTutorials: Tooling Tutorials
+
+:LinkToolingUserGuide: https://access.redhat.com/documentation/en-us/{productpkg}/{version}/html-single/tooling_user_guide/index
+:NameOfToolingUserGuide: Tooling User Guide
+
+
+// Module included in the following assemblies:
+// master.adoc
+
+:parent-context: {context}
+[id='amq-to-rest-api_{context}']
+= Implement an AMQ to REST API sample integration
+
+
+:context: amq2api
+The sample integration connects to an AMQ broker to obtain item
+delivery records for a hypothetical enterprise. The integration then executes
+a custom step that operates on the records to identify any
+items that were damaged when they were received. After a simple data mapping,
+the integration connects to
+a REST API to obtain and provide contact information for vendors of
+damaged items.
+
+The other sample integrations use connectors and data operations that are built
+into {prodname}. This integration also does that, but in addition,
+it provides instructions for customizing
+and extending {prodname} by leading you through the procedures for:
+
+* Adding a custom data operation by uploading an extension.
+* Adding a custom REST API client connector by uploading an OpenAPI (Swagger) file.
+
+{prodname} provides the extension file and the OpenAPI file.
+
+//resources 
+
+
+[type=walkthroughResource,serviceName=fuse]
+.Fuse Online
+****
+* link:{fuse-url}[Console]
+****
+
+[type=walkthroughResource,serviceName=amq-broker-72-persistence]
+.AMQ
+****
+* link:{amq-url}[Management Console]
+****
+
+[type=walkthroughResource,serviceName=openshift]
+.Red Hat OpenShift
+****
+* link:{openshift-host}/console[Console]
+****
+
+
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// amq2api_intro.adoc
+
+:sectnums:
+
+[time=5]
+[id='amq2api-create-amq-connection_{context}']
+= Create an AMQ connection
+
+The AMQ to REST API sample integration starts by connecting to an
+AMQ broker that is provided in your OpenShift Online  project. Before you
+start to create the integration itself, you must start the broker
+and create an AMQ connection to that broker.
+
+.Procedure
+
+. Start the broker:
+
+.. In a browser, go to the
+link:{openshift-host
+}[OpenShift Online Web Console].
+Your {prodname} environment runs on OpenShift Online.
+
+.. In the console, on the right, under *My Projects*, click *Fuse Online* to
+display the project's overview.
++
+Your project's name is something like `proj123456`.
+
+.. In the overview, click the first entry, *broker-amq, #1* to expand the entry for the
+provided AMQ broker.
+
+.. On the right, click the up caret to scale up to running 1 pod. This starts
+the AMQ broker.
+
+. Create the AMQ connection:
+
+.. In {prodname}, in the left panel, click *Connections* to display any
+available connections.
+.. In the upper right, click *Create Connection* to display
+{prodname} connectors.
+.. Click the *AMQ* connector.
+.. Configure the connection by entering:
++
+... In the *Broker URL* field, enter `*tcp://broker-amq-tcp:61616*`
+as the location to obtain data from.
+... In the *Username* field, enter `*amq*` as the user name for
+the account that accesses this AMQ broker.
+... In the *Password* field, enter `*topSecret*` as the password for
+the account that accesses this AMQ broker.
+... Leave the other fields blank.
+.. Click *Validate*. {prodname} immediately tries to validate the
+connection and displays a message that indicates whether
+validation is successful. If validation fails, check the values you
+entered and try again.
+.. When validation is successful, click *Next*.
+.. In the *Connection Name* field, enter your choice of a name that
+helps you distinguish this connection from any other connections.
+For example, enter `*AMQ Broker 1*`.
+.. In the *Description* field, optionally enter any information that
+is helpful to know about this connection. For example,
+enter `*Sample AMQ connection
+that uses the provided broker.*`
+
+
+
+[type=verification]
+In the upper right, click *Create* to see that the connection you created is now available. If you entered the example name, you would see that *AMQ Broker 1* is now available.
+
+:leveloffset!:
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// amq2api_intro.adoc
+[time=5]
+[id='amq2api-create-custom-step_{context}']
+= Make a custom step available
+
+{prodname} provides a number of steps that operate on
+integration data between connections. If {prodname} does not provide a
+between-connections step that meets your need,
+a developer can code an extension that defines one or more
+custom steps that operate on data between connections.
+The developer gives you a `.jar` file that contains the extension.
+You then upload the extension in {prodname} to make the custom step(s)
+available for use in integrations.
+
+The AMQ to REST API sample integration uses a custom step that
+operates on data between connections to
+identify items that were damaged when they were received.
+
+.Procedure
+
+. In a new browser tab, go to
+https://github.com/syndesisio/fuse-online-sample-extension/releases.
+
+. Download the extension’s `.jar` file.
+
+. In {prodname}, in the left panel, click *Customizations*.
+. At the top, click *Extensions*.
+. Click *Import Extension*.
+. Click *Browse* and select the downloaded `.jar` file that contains the
+extension.
+{prodname} validates the file, extracts and displays the extension's
+name, ID, and description, and lists *Damage Reporter* as the custom step
+that the extension defines.
+. Click *Import*. {prodname} makes the custom step available and displays
+the extension details page.
+
+
+[type=taskResource]
+.Task Resource
+****
+* For more information about coding an extension and creating its `.jar` file, see the
+{LinkToolingUserGuide}igniteextension/[{NameOfToolingUserGuide}].
+****
+
+:leveloffset!:
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// amq2api_intro.adoc
+[time=5]
+[id='amq2api-create-rest-api-connector_{context}']
+= Create a REST API connector
+
+{prodname} can create connectors for REST APIs
+that support Hypertext Transfer Protocol (HTTP)/1.0 or HTTP/1.1.
+To do this, {prodname} requires a valid
+OpenAPI 2.0 specification that describes a REST API you want to connect to.
+
+Your {prodname} environment provides the To Do app, which has a REST API
+for accessing a database that contains tasks. Your environment also provides
+an OpenAPI (Swagger) specification for this API.
+
+.Procedure
+
+. Identify the URL for your {prodname} environment's copy of the
+OpenAPI specification:
+.. In the {prodname} navigation panel, click *Home*.
+.. Copy the URL into a text editor.
+.. At the beginning of the URL, insert `*todo-*`.
+.. At the end of the URL, replace `dashboard` with `*swagger.json*`.
+.. Use the `http` scheme instead of `https`.
+
++
+The result is something like this:
+`\http://todo-app-proj217402.6a63.fuse-ignite.openshiftapps.com/swagger.json`
+
+. In the {prodname} navigation panel, click *Customizations*.
+. Click *Create API Connector*.
+. Select *Use a URL*.
+. In the input box, paste the URL for your OpenAPI specification and
+click *Next*.
+. On the *Review OpenAPI Actions* page, click *Next*. If you see
+a warning, you can ignore it.
+. Click *Next* again to accept *HTTP Basic Authorization*.
+. On the *Review/Edit Connector Details* page, {prodname} populates
+the fields with values from the OpenAPI specification.
+.. If you want to, you can
+change the values in the *Connector Name* and *Description* fields.
+.. Confirm that the value in the *Host* field is correct. For example,
+it should be something like this:
+`\http://todo-app-proj217402.6a63.fuse-ignite.openshiftapps.com`.
+.. Confirm that the value in the *Base URL* field is `/api`.
+. Click *Create API Connector*.
++
+{prodname} displays the *API Client Connectors* tab with an entry for
+the *Todo App API* that you just created.
+
+:leveloffset!:
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// amq2api_intro.adoc
+[time=5]
+[id='amq2api-upload-todo-app-icon_{context}']
+= Upload the To Do app icon
+
+To show the flow of an integration, {prodname} displays icons that identify
+the applications that the integration is connecting to. Your {prodname}
+environment provides an icon for the To Do app. Follow these instructions
+to upload it.
+
+.Procedure
+
+. Display the To Do app icon:
+
+.. In a new browser tab, paste the URL for your OpenAPI (Swagger) specification.
+.. At the end of the URL, replace `swagger.json` with `images/todo_icon.png`
+and click *Enter*. For example:
+`\https://todo-app-proj217402.6a63.fuse-ignite.openshiftapps.com/images/todo_icon.png`.
+
+. Save the `todo_icon.png` image.
+
+. In {prodname}, in the *API Client Connectors* tab, click the entry for
+the *Todo App API* to display its details.
+
+. On the *Connector Details* page, click *Browse*.
+
+. Navigate to `todo_icon.png`, select it, and click *Open*.
+
+. Refresh the display of the *Connector Details* page.
+The image now appears on the left.
+
+:leveloffset!:
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// amq2api_intro.adoc
+[time=5]
+[id='amq2api-create-rest-api-connection_{context}']
+= Create a REST API connection
+
+In an integration, before you can connect to a REST API, you create a REST API
+client connector and then use that connector to create a connection.
+Follow the instructions here to create a connection to the To Do app REST API.
+
+.Prerequisite
+* You created the Todo App API connector.
+
+.Procedure
+
+. In {prodname}, in the left panel, click *Connections* to
+display any available connections.
+. In the upper right, click *Create Connection* to display
+available connectors.
+. Click the *Todo App API* connector that you just created.
+. In the *Todo App API Configuration*, notice that {prodname} populates the
+*Authentication Type*, *Base Path*, and *Host* fields from the
+connector information.
+. In the *Username* field, enter any value. For this sample integration,
+user name and password values are required but they are not used.
+. In the *Password* field, enter any value.
+. Click *Next*.
+. In the *Connection Name* field, enter your choice of a name that
+helps you distinguish this connection from any other connections.
+For example, enter `*Todo App API Client*`.
+. In the *Description* field, optionally enter any information that
+is helpful to know about this connection. For example, enter
+`*Connection to the provided Todo app REST API.*`
+. In the upper right, click *Create* to see that the connection you
+created is now available.
+
+:leveloffset!:
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// amq2api_intro.adoc
+[time=20]
+:parent-context: {context}
+[id='amq2api-create-integration_{context}']
+= Create and deploy AMQ to REST API sample integration
+:context: create-amq
+
+.Prerequisites
+* You created a connection to the provided AMQ broker.
+* You created an API Client connection to the provided Todo app.
+* You uploaded the extension that provides the Damage Reporter step.
+
+:leveloffset: +2
+
+// Module included in the following assemblies:
+// amq2api_create_integration.adoc
+
+[id='amq2api-choose-start-connection_{context}']
+= Choose the start connection
+
+In {prodname}, to create the sample AMQ to REST API sample integration,
+the first task is to choose the start connection.
+
+.Prerequisites
+* You started the provided AMQ broker.
+* You created an AMQ connection.
+
+.Procedure
+
+. In {prodname}, on the left, click *Integrations*.
+. Click *Create Integration*.
+. On the *Choose a Start Connection* page, click your
+AMQ connection. If you specified the example name,
+you would click *AMQ Broker 1*.
+. On the *Choose an Action* page, click the *Subscribe for Messages* action
+to receive messages from the queue you specify.
+. In the *Destination Name* field, enter `*inventoryReceived*` for
+the name of the queue to obtain data from.
+. Click in the *Destination Type* field and select *Queue*.
+. Leave the other fields blank.
+. Click *Next*. {prodname} prompts you to specify the output data type.
+This is not needed for this sample integration.
+. Click *Done* to add the start connection to the integration.
+
+.Next step
+When the integration is running, after connecting to AMQ, the integration watches for
+messages on the `inventoryReceived` queue. When a message is available,
+the integration passes it to the *Damage Reporter* step.
+However, before you can add that step to the integration, you must choose the
+integration's finish connection.
+
+:leveloffset!:
+
+:leveloffset: +2
+
+// Module included in the following assemblies:
+// amq2api_create_integration.adoc
+
+[id='amq2api-choose-finish-connection_{context}']
+= Choose the finish connection
+
+In {prodname}, to continue creating the AMQ to REST API sample
+integration, after you add the start connection, you add the finish connection
+to the integration.
+
+.Prerequisites
+* You uploaded the provided OpenAPI specification to create the Todo App API
+connector.
+* You used the Todo App API connector to create a Todo App API connection.
+
+.Procedure
+. In {prodname}, on the *Choose a Finish Connection* page, click the To Do app
+connection that you created. If you assigned the example name, you would
+click *Todo App API Client*.
+
+. On the *Choose an Action* page, click *Create new task*,
+which provides information about who to contact to address
+a particular damaged item.
+
+:leveloffset!:
+
+:leveloffset: +2
+
+// Module included in the following assemblies:
+// amq2api_create_integration.adoc
+
+[id='amq2api-add-damage-reporter-step_{context}']
+= Add a damage reporter step
+
+With the start and finish connections in place, you are ready to
+add the custom step that receives the messages from the AMQ broker
+and identifies any items that were damaged when they were received.
+
+.Prerequisite
+* You uploaded the extension that provides the Damage Reporter custom step.
+* You added the start and finish connections to the integration.
+
+.Procedure
+
+. In {prodname}, in the center, click *Add a Step*.
+. On the *Choose a Step* page, click *Damage Reporter*.
+
+:leveloffset!:
+
+:leveloffset: +2
+
+// Module included in the following assemblies:
+// amq2api_create_integration.adoc
+
+[id='amq2api-add-mapping-step_{context}']
+= Add a data mapping step
+
+To continue creating the AMQ to REST API sample integration, you need to add a
+data mapping step. This step correlates the `task` field in the
+output from the damage reporter step to the `task` field in the
+database that the REST API accesses.
+
+.Prerequisite
+* You added the Damage Reporter step to the integration.
+
+.Procedure
+. In {prodname}, in the left panel, hover over the plus sign between the damage reporter
+step and the finish connection to display a pop-up in which
+you click *Add a Step*.
+. On the *Choose a Step* page, click *Data Mapper*. In the data mapper,
+the *Sources* panel on the left displays the fields in the
+output from the damage reporter step. The
+*Target* panel on the right displays the fields in the database that
+the API accesses.
+. In the *Sources* panel, click the `task` field.
+. In the *Target* panel, expand the `body` field and click `task`.
+. Click *Done*.
+
+:leveloffset!:
+
+:leveloffset: +2
+
+// Module included in the following assemblies:
+// amq2api_create_integration.adoc
+
+[id='amq2api-name-and-publish_{context}']
+= Give the integration a name and deploy it
+
+The AMQ to REST API sample integration is complete when it has an AMQ start
+connection, a Damage Reporter step, a data mapper step, and it finishes
+with a Todo App Client API connection. Follow the instructions here to
+deploy it.
+
+.Prerequisites
+* You added the start and finish connections to the integration.
+* You added a Damager Reporter step between the start and finish connections.
+* You added a Data Mapper step between the Damage Reporter step and
+the connection to the Todo App API.
+
+.Procedure
+. In {prodname}, in the upper right, click *Publish* to give it a name.
+. In the *Integration Name* field, enter a name for the
+integration. For example, `*AMQ to REST API Sample Integration*`.
+. Optionally, in the *Description* field, enter information that might be
+helpful to know about this integration.
+. In the upper right corner, click *Publish*.
++
+{prodname} displays the integration summary page with a progress
+indicator that shows the publishing stages.
+{prodname} is generating the runtime for the integration and
+will start it when the runtime is ready. This takes a few minutes.
++
+A {prodname} account is limited to a specific number of
+integrations that can be running at one time. For details,
+see the pricing plan. If you are already running the maximum
+number of integrations, then you must stop an integration
+before you can start running another one.
++
+If you are using a {prodname} evaluation
+account, then only one integration at a time can be running.
+If you already created one of the other sample integrations and that
+integration is running then this integration is automatically in the
+*Stopped* state. You must stop the running integration and
+then you can then publish this integration.
+
+. If you are already running the maximum number of integrations, follow
+these steps to stop an integration:
+
+.. In the left panel, click *Integrations*.
+.. In the entry for the integration that you want to stop, click
+image:images/ThreeVerticalDotsKebab.png[title="the three vertical dots"]
+on the far right.
+.. In the popup, click *Stop*.
+
+. After stopping an integration, start another integration as follows:
+
+.. In the left panel, click *Integrations*.
+.. In the entry for the integration that you want to start, click
+image:images/ThreeVerticalDotsKebab.png[title="the three vertical dots"]
+on the far right.
+.. In the popup, click *Publish*.
+
+:leveloffset!:
+
+:context: {parent-context}
+
+:leveloffset!:
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// amq2api_intro.adoc
+[time=5]
+[id='amq2api-confirm-works_{context}']
+= Confirm that the AMQ to REST API integration works
+
+After you create and publish the AMQ to REST API sample integration,
+you can confirm that it works as defined.
+
+.Prerequisite
+In {prodname}, in the list of integrations,
+*Running* appears next to the AMQ to REST API
+integration that you created and deployed.
+
+.Procedure
+
+. In a new browser window, go to the To Do app display by
+inserting `*todo-*` in front of the URL
+for your {prodname} environment. For example:
+`\https://todo-app-proj7614.6a63.fuse-ignite.openshiftapps.com/`.
+. In the To Do app display, click *Show JMS Form* to display an
+input box that contains an XML message.
+. Click *Send JMS Message* to send that message
+to the AMQ broker in your OpenShift project.
++
+Successful execution returns a task from the To Do app client API. The task
+identifies the ID of the damaged item and the contact information for its
+vendor. If the task does not appear in a moment or two, try reloading the
+page.
+. Edit the XML message to specify two damaged items:
+.. Click *Show JMS Form* to display the message input box again.
+.. In the XML message, change the entry for the undamaged item to
+specify `damaged="true"`.
+.. Click *Send JMS Message*. The To Do app client API returns a new
+task that contains IDs for two damaged items and contact information for
+the two vendors.
+. Edit the XML message to specify an ID that you make up:
+.. Click *Show JMS Form*.
+.. In the XML message, for the item that has `damaged="true"`, change the item
+ID, for example, to `1234`.
+.. Click *Send JMS Message*. The To Do app client API returns a new
+task with the item ID that you just entered.
+
+. Optionally, view the integration log to troubleshoot an
+unexpected result or to learn more about integration execution:
+
+.. In {prodname}, in the left panel, click *Integrations*.
+.. Click the entry for your AMQ to API integration.
+.. In the integration's summary page, click the *Activity* tab.
+.. Optionally, enter date and/or keyword filters to limit the executions
+listed.
+.. Click the integration execution for which you want to view activity information.
+
+:leveloffset!:
+
+:leveloffset: +1
+
+// Module included in the following assemblies:
+// t2sf_intro.adoc
+// sf2db_intro.adoc
+// amq2api_intro.adoc
+
+[time=5]
+[id='cleanup_{context}']
+= Clean up your integration
+
+When you are done working with a sample integration, you should stop it and
+delete it so that you can use the resources for another integration.
+
+.Prerequisites
+* You are finished working with a sample integration that you published.
+
+.Procedure
+. In {prodname}, in the left panel, click *Integrations*.
+. In the main panel, identify the entry for the sample integration that
+you want to stop.
+. In that entry, to the right, click
+image:images/ThreeVerticalDotsKebab.png[Kebab Menu] and then
+click *Stop*.
+. Click *Stop* to confirm that you want to stop running the integration.
+
+. In the entry for the integration that you just stopped, to the right, click
+image:images/ThreeVerticalDotsKebab.png[Kebab Menu] and then
+click *Delete*.
+. Click *Delete* to confirm that you want to delete the integration.
+
+:leveloffset!:
+
+:context: {parent-context}
