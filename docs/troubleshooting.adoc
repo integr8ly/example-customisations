@@ -12,7 +12,10 @@ This can be due to a number of reasons:
   * If in a repo, ensure the walkthrough is in the `walkthroughs` directory of the
   repo. 
 - The repo containing the walkthrough in `WALKTHROUGH_LOCATIONS` was updated after the server has started.
-  * If the repo was updated after the server has started, invoke the `POST /sync-walkthroughs` endpoint or restart the server.  
+  * If the repo was updated after the server has started, invoke the `POST /sync-walkthroughs` endpoint, for example `curl -X POST localhost:3006/sync-walkthroughs`.
++
+NOTE: This sync feature only works for local development, it does not work when the web app is hosted on OpenShift. When necessary restart or redeploy the web app.
+
 
 ## ServiceInstances are not being created
 
