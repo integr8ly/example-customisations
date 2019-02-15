@@ -5,8 +5,8 @@
     method: POST
     body_format: form-urlencoded
     body:
-      username: "{{ che_launcher_sso_username }}"
-      password: "{{ che_launcher_sso_password }}"
+      username: "{{ che_keycloak_user }}"
+      password: "{{ che_keycloak_password }}"
       grant_type: password
       client_id: "{{ che_keycloak_client_id }}"
     validate_certs: no
