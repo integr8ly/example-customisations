@@ -1,5 +1,6 @@
 # Example Customisations of an Integreatly cluster
 
+NOTE: Customisations are only possible in an Integreatly cluster running on OpenShift Container Platform.
 
 ## Running examples
 
